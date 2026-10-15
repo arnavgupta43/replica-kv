@@ -1,0 +1,39 @@
+# 1 coordinator + 3 replicas. Each service gets its own volume, so its data
+# survives `docker kill` / `docker compose down` (but not `down -v`).
+# Inside the Docker network, services reach each other by name (replica-a, ...).
+
+services:
+  coordinator:
+    build: .
+    command: ["node", "src/coordinator/server.js"]
+    environment:
+      NODE_ID: coordinator
+      PORT: 4000
+      DATA_DIR: /data
+      REPLICAS: http://replica-a:4001,http://replica-b:4002,http://replica-c:4003
+    ports: ["4000:4000"]
+    volumes: ["coord-data:/data"]
+
+  replica-a:
+    build: .
+    environment: { NODE_ID: replica-a, PORT: 4001, DATA_DIR: /data }
+    ports: ["4001:4001"]
+    volumes: ["a-data:/data"]
+
+  replica-b:
+    build: .
+    environment: { NODE_ID: replica-b, PORT: 4002, DATA_DIR: /data }
+    ports: ["4002:4002"]
+    volumes: ["b-data:/data"]
+
+  replica-c:
+    build: .
+    environment: { NODE_ID: replica-c, PORT: 4003, DATA_DIR: /data }
+    ports: ["4003:4003"]
+    volumes: ["c-data:/data"]
+
+volumes:
+  coord-data:
+  a-data:
+  b-data:
+  c-data:

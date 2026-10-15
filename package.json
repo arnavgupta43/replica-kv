@@ -1,0 +1,19 @@
+{
+  "name": "replica-kv",
+  "version": "0.1.0",
+  "description": "mini-dynamo: a small leaderless replicated key-value store, built for learning",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "replica:a": "node --env-file=env/replica-a.env src/replica/server.js",
+    "replica:b": "node --env-file=env/replica-b.env src/replica/server.js",
+    "replica:c": "node --env-file=env/replica-c.env src/replica/server.js",
+    "coordinator": "node --env-file=env/coordinator.env src/coordinator/server.js"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "express": "^4.22.3"
+  }
+}
