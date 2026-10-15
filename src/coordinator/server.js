@@ -1,11 +1,12 @@
 import express from "express";
 import { PORT, DATA_DIR, REPLICAS, W, R } from "../config.js";
 import { loadVersion } from "./version.js";
-import { listHints } from "./hints.js";
+import { listHints, startHintReplay } from "./hints.js";
 import { put } from "./put.js";
 import { get } from "./get.js";
 
 loadVersion(DATA_DIR);
+startHintReplay();
 
 const app = express();
 app.use(express.json());

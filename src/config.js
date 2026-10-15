@@ -17,3 +17,8 @@ export const R = 2;
 
 // How long the coordinator waits for a replica before treating it as failed.
 export const TIMEOUT_MS = 1000;
+
+// Hinted handoff: how often to retry delivering hints, and how long to keep trying.
+// After the TTL a hint is dropped and anti-entropy is left to fix that replica.
+export const HINT_REPLAY_MS = 5000;
+export const HINT_TTL_MS = Number(process.env.HINT_TTL_MS) || 10 * 60 * 1000; // 10 minutes

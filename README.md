@@ -2,7 +2,7 @@
 
 A small, **leaderless, replicated key-value store** built for learning — a hands-on way to understand how systems like Amazon Dynamo, Cassandra, and Riak stay available and eventually consistent when machines fail.
 
-> Status: **put, get and read-repair working.** Next: hinted handoff. Design: [`docs/HLD.md`](docs/HLD.md).
+> Status: **put, get, read-repair and hinted handoff working.** Next: Merkle anti-entropy. Design: [`docs/HLD.md`](docs/HLD.md).
 
 ---
 
@@ -82,7 +82,7 @@ Details: [HLD §7](docs/HLD.md#7-deployment).
 - [x] **Phase 1** — Replica: store that only accepts higher versions, persisted to an on-disk log
 - [x] **Phase 2** — Coordinator: quorum put/get (N=3, W=2, R=2)
 - [x] **Phase 3** — Read-repair (fire-and-forget)
-- [ ] **Phase 4** — Hinted handoff with periodic replay
+- [x] **Phase 4** — Hinted handoff: coordinator pushes hints every 5s, deletes on OK, drops after a TTL
 - [ ] **Phase 5** — Merkle anti-entropy (v1 flat buckets → v2 binary tree)
 - [ ] **Phase 6** — Docker Compose cluster + chaos script: crash/restart/partition replicas, assert convergence
 
@@ -105,7 +105,7 @@ src/
     server.js            HTTP: PUT /kv/:key {value, version}, GET /kv/:key
   coordinator/
     version.js           version counter, persisted to disk
-    hints.js             hint store for missed writes (in-memory for now)
+    hints.js             hint store + replay loop (in-memory, TTL-bounded)
     replicaClient.js     HTTP calls to replicas (send a value, read a value)
     put.js               put path: parallel send, 2-of-3 quorum, hints on failure
     get.js               get path: 2-of-3 quorum read, newest wins, read-repair
