@@ -1,6 +1,8 @@
 import express from "express";
-import { NODE_ID, PORT, DATA_DIR } from "../config.js";
+import { NODE_ID, PORT, DATA_DIR, PEERS, BUCKETS } from "../config.js";
 import { openStore, apply, get } from "./store.js";
+import { bucketHashes, bucketEntries } from "./merkle.js";
+import { startAntiEntropy } from "./antiEntropy.js";
 
 openStore(DATA_DIR);
 
@@ -34,6 +36,22 @@ app.get("/kv/:key", (req, res) => {
   res.json(entry);
 });
 
-app.listen(PORT, () => {
-  console.log(`replica ${NODE_ID} listening on port ${PORT}`);
+// Anti-entropy: the fingerprint of every bucket (an array of BUCKETS hashes).
+app.get("/merkle", (req, res) => {
+  res.json(bucketHashes());
 });
+
+// Anti-entropy: every entry in one bucket, so a peer can compare key by key.
+app.get("/bucket/:i", (req, res) => {
+  const bucket = Number(req.params.i);
+  if (!Number.isInteger(bucket) || bucket < 0 || bucket >= BUCKETS) {
+    return res.status(400).json({ error: `bucket must be 0..${BUCKETS - 1}` });
+  }
+  res.json(bucketEntries(bucket));
+});
+
+app.listen(PORT, () => {
+  console.log(`replica ${NODE_ID} listening on port ${PORT} (peers: ${PEERS.join(", ") || "none"})`);
+});
+
+startAntiEntropy();

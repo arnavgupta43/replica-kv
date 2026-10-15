@@ -8,6 +8,9 @@ export const DATA_DIR = process.env.DATA_DIR;
 // Coordinator only: the replica URLs, e.g. "http://localhost:4001,http://localhost:4002"
 export const REPLICAS = (process.env.REPLICAS || "").split(",").filter(Boolean);
 
+// Replica only: the OTHER replicas' URLs, used for anti-entropy.
+export const PEERS = (process.env.PEERS || "").split(",").filter(Boolean);
+
 // Quorum: a write succeeds when W replicas confirm it.
 export const W = 2;
 
@@ -22,3 +25,8 @@ export const TIMEOUT_MS = 1000;
 // After the TTL a hint is dropped and anti-entropy is left to fix that replica.
 export const HINT_REPLAY_MS = 5000;
 export const HINT_TTL_MS = Number(process.env.HINT_TTL_MS) || 10 * 60 * 1000; // 10 minutes
+
+// Anti-entropy: every key is placed in one of BUCKETS buckets; replicas compare bucket hashes
+// with a random peer every ANTI_ENTROPY_MS.
+export const BUCKETS = 1024;
+export const ANTI_ENTROPY_MS = 10000;

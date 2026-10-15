@@ -48,6 +48,15 @@ export function get(key) {
   return data.get(key);
 }
 
+// Every key this replica holds, as [{ key, value, version }]. Used by anti-entropy.
+export function allEntries() {
+  const result = [];
+  for (const [key, { value, version }] of data) {
+    result.push({ key, value, version });
+  }
+  return result;
+}
+
 // Used while replaying the log: same rule as apply(), but no disk write.
 function applyInMemory(key, value, version) {
   const current = data.get(key);

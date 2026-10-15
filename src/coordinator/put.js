@@ -1,7 +1,7 @@
 import { REPLICAS, W } from "../config.js";
 import { nextVersion } from "./version.js";
 import { addHint } from "./hints.js";
-import { sendToReplica } from "./replicaClient.js";
+import { sendToReplica } from "../shared/replicaClient.js";
 
 // The put path:
 //   1. assign a version

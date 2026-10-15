@@ -2,7 +2,7 @@
 
 A small, **leaderless, replicated key-value store** built for learning — a hands-on way to understand how systems like Amazon Dynamo, Cassandra, and Riak stay available and eventually consistent when machines fail.
 
-> Status: **put, get, read-repair and hinted handoff working.** Next: Merkle anti-entropy. Design: [`docs/HLD.md`](docs/HLD.md).
+> Status: **put, get, read-repair, hinted handoff and anti-entropy (v1) working.** Next: Merkle tree (v2). Design: [`docs/HLD.md`](docs/HLD.md).
 
 ---
 
@@ -83,7 +83,7 @@ Details: [HLD §7](docs/HLD.md#7-deployment).
 - [x] **Phase 2** — Coordinator: quorum put/get (N=3, W=2, R=2)
 - [x] **Phase 3** — Read-repair (fire-and-forget)
 - [x] **Phase 4** — Hinted handoff: coordinator pushes hints every 5s, deletes on OK, drops after a TTL
-- [ ] **Phase 5** — Merkle anti-entropy (v1 flat buckets → v2 binary tree)
+- [ ] **Phase 5** — Merkle anti-entropy — *v1 (1024 flat bucket hashes) done; v2 (binary tree) next*
 - [ ] **Phase 6** — Docker Compose cluster + chaos script: crash/restart/partition replicas, assert convergence
 
 ## Tech stack
@@ -99,14 +99,17 @@ Details: [HLD §7](docs/HLD.md#7-deployment).
 
 ```
 src/
-  config.js              settings from env vars (NODE_ID, PORT, DATA_DIR, REPLICAS)
+  config.js              settings from env vars (NODE_ID, PORT, DATA_DIR, REPLICAS, PEERS)
+  shared/
+    replicaClient.js     HTTP calls to a replica (send a value, read a value, fetch JSON)
   replica/
     store.js             in-memory Map + append-only log on disk (only higher versions win)
-    server.js            HTTP: PUT /kv/:key {value, version}, GET /kv/:key
+    merkle.js            bucket of a key, bucket hashes, bucket entries (Merkle v1)
+    antiEntropy.js       every 10s: sync with a random peer, pull newer / push newer
+    server.js            HTTP: PUT/GET /kv/:key, GET /merkle, GET /bucket/:i
   coordinator/
     version.js           version counter, persisted to disk
     hints.js             hint store + replay loop (in-memory, TTL-bounded)
-    replicaClient.js     HTTP calls to replicas (send a value, read a value)
     put.js               put path: parallel send, 2-of-3 quorum, hints on failure
     get.js               get path: 2-of-3 quorum read, newest wins, read-repair
     server.js            HTTP: PUT /kv/:key {value}, GET /kv/:key, GET /hints

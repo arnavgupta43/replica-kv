@@ -1,5 +1,5 @@
 import { REPLICAS, R } from "../config.js";
-import { sendToReplica, readFromReplica } from "./replicaClient.js";
+import { sendToReplica, readFromReplica } from "../shared/replicaClient.js";
 
 // The get path:
 //   1. ask ALL replicas in parallel

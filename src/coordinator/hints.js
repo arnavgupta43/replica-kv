@@ -1,5 +1,5 @@
 import { HINT_REPLAY_MS, HINT_TTL_MS } from "../config.js";
-import { sendToReplica } from "./replicaClient.js";
+import { sendToReplica } from "../shared/replicaClient.js";
 
 // Hint store: writes that a replica missed, kept so they can be redelivered later.
 // Each hint is { replica, key, value, version, createdAt }.

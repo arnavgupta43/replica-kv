@@ -16,19 +16,19 @@ services:
 
   replica-a:
     build: .
-    environment: { NODE_ID: replica-a, PORT: 4001, DATA_DIR: /data }
+    environment: { NODE_ID: replica-a, PORT: 4001, DATA_DIR: /data, PEERS: "http://replica-b:4002,http://replica-c:4003" }
     ports: ["4001:4001"]
     volumes: ["a-data:/data"]
 
   replica-b:
     build: .
-    environment: { NODE_ID: replica-b, PORT: 4002, DATA_DIR: /data }
+    environment: { NODE_ID: replica-b, PORT: 4002, DATA_DIR: /data, PEERS: "http://replica-a:4001,http://replica-c:4003" }
     ports: ["4002:4002"]
     volumes: ["b-data:/data"]
 
   replica-c:
     build: .
-    environment: { NODE_ID: replica-c, PORT: 4003, DATA_DIR: /data }
+    environment: { NODE_ID: replica-c, PORT: 4003, DATA_DIR: /data, PEERS: "http://replica-a:4001,http://replica-b:4002" }
     ports: ["4003:4003"]
     volumes: ["c-data:/data"]
 

@@ -1,9 +1,9 @@
 import { TIMEOUT_MS } from "../config.js";
 
-// The only two ways the coordinator talks to a replica.
-// Neither function ever throws - errors and timeouts become plain return values.
+// HTTP calls to a replica - used by the coordinator, and by replicas talking to each other.
+// None of these functions ever throws - errors and timeouts become plain return values.
 
-// Send a versioned value. Used by writes, read-repair, and (later) hint replay.
+// Send a versioned value. Used by writes, read-repair, hint replay, and anti-entropy.
 // Returns true if the replica confirmed, false on error or timeout.
 export async function sendToReplica(replica, key, value, version) {
   try {
@@ -33,5 +33,17 @@ export async function readFromReplica(replica, key) {
     return { ok: true, entry: await res.json() };
   } catch {
     return { ok: false };
+  }
+}
+
+// GET any JSON endpoint on a replica (used by anti-entropy for /merkle and /bucket/:i).
+// Returns the parsed JSON, or null on error or timeout.
+export async function fetchJson(url) {
+  try {
+    const res = await fetch(url, { signal: AbortSignal.timeout(TIMEOUT_MS) });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
   }
 }
